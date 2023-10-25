@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatter Plot</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        svg {
+            width: 800px;
+            height: 600px;
+            margin: auto;
+            display: block;
+            background-color: aliceblue;
+        }
+    </style>
+</head>
+<body>
+    <script>
+    const url = "https://raw.githubusercontent.com/Harsha99-99/CIS-530/main/MASS_Resident_Population_2010-2019.csv";
+        
+        d3.csv(url).then(data => {
+            let filtered_data = data.filter(d => {
+                return d['GEO_ID'] === "0500000US25001";
+            });
+
+            filtered_data = filtered_data.map(d => {
+                return {
+                    Name: d['NAME'].split(" ")[0],
+                    Population: +d['POP'],
+                    Date: new Date(d['DATE'])
+                };
+            });
+
+            filtered_data = filtered_data.filter(d => d['Date'] > new Date("2010-04-01"));
+
+            console.table(filtered_data);
+
+            const margin = 20;
+            const width = 800 - 2 * margin;
+            const height = 600 - 2 * margin;
+
+            // Create SVG element
+            let svg = d3.select("body").append("svg")
+                .attr("width", width + 2 * margin)
+                .attr("height", height + 2 * margin)
+                .append("g")
+                .attr("transform", `translate(${margin},${margin})`);
+
+            // Create x and y scales
+            const xScale = d3.scaleTime()
+                .domain(d3.extent(filtered_data, d => d.Date))
+                .range([0, width]);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(filtered_data, d => d.Population)])
+                .range([height, 0]);
+
+            // Create circles for the scatter plot
+            svg.selectAll('circle')
+                .data(filtered_data)
+                .enter()
+                .append('circle')
+                .attr('cx', d => xScale(d.Date))
+                .attr('cy', d => yScale(d.Population))
+                .attr('r', 4)
+                .style('fill', 'steelblue');
+        });
+    </script>
+</body>
+</html>
